@@ -1,42 +1,69 @@
-# Toplu Sms Apisi
+# Php Toplu SMS API
 
-# Bu PHP kodu, bir API'ye istek göndermek için kullanılan bir fonksiyon (send_request) ve bu fonksiyonun kullanıldığı bir main fonksiyonundan oluşmaktadır. Kodun işleyişi ve kullanımı aşağıda açıklanmıştır:
+Bu proje, bir SMS API kullanarak toplu SMS göndermeyi sağlayan bir PHP betiği içerir. Bu betik, belirli bir sağlayıcıdan alınan token ile SMS gönderimi yapmanızı sağlar.
 
-# 1. send_request Fonksiyonu
-# Bu fonksiyon, bir URL'ye belirli veriler ($data) ve başlıklar ($headers) ile HTTP POST isteği göndermek için kullanılır. Fonksiyonun adım adım açıklaması:
+## Özellikler
 
-# curl_init($url): Belirtilen URL'ye bir cURL oturumu başlatır.
-# curl_setopt($ch, CURLOPT_POST, true): HTTP POST isteği yapılacağını belirtir.
-# curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)): POST isteğiyle gönderilecek verileri JSON formatında ayarlar.
-# curl_setopt($ch, CURLOPT_HTTPHEADER, $headers): İsteğe özel başlıklar ekler (örneğin, içerik türü ve kullanıcı ajanı).
-# curl_setopt($ch, CURLOPT_RETURNTRANSFER, true): İsteğin sonucunun doğrudan çıktılanmasını değil, fonksiyon tarafından döndürülmesini sağlar.
-# curl_exec($ch): İsteği yürütür ve sonuçları $response değişkenine kaydeder.
-# curl_getinfo($ch, CURLINFO_HTTP_CODE): HTTP durum kodunu alır ve $httpcode değişkenine kaydeder.
-# curl_errno($ch): cURL'de bir hata olup olmadığını kontrol eder. Varsa hata mesajını döndürür.
-# $httpcode !== 200: HTTP durum kodunun 200 (başarılı) olup olmadığını kontrol eder. Eğer değilse, bir HTTP hata mesajı döndürür.
-# curl_close($ch): cURL oturumunu kapatır.
-# json_decode($response, true): Dönen JSON verilerini PHP dizisine dönüştürür ve fonksiyonun sonucunu döndürür.
+* **Kolay Entegrasyon**: Bu betik, SMS API'si ile kolayca entegre olmanızı sağlar. API'ye gönderilen istekler ve gelen yanıtlar cURL ile yönetilir.
+  
+* **Toplu SMS Gönderimi**: Birden fazla telefon numarasına aynı anda SMS gönderebilirsiniz. Mesajlarınızı bir liste halinde belirleyebilir ve toplu olarak gönderebilirsiniz.
 
-# 2. main Fonksiyonu
-# Bu fonksiyon, API ile bağlantı kurmak ve toplu SMS göndermek için gerekli adımları içerir.
+* **Başlık ve Mesaj İçeriği Yönetimi**: SMS başlığı ve mesaj içeriğini dinamik olarak ayarlayabilirsiniz.
 
-# $token_value: Sağlayıcıdan alınan token anahtarıdır. Bu, API'ye kimlik doğrulama için gereklidir.
-# $data: İlk istek için gönderilen veriler. Bu örnekte, API'nin bağlantısını test etmek için "status" değeri "account" olarak ayarlanmıştır.
-# $url: API'nin URL'si. Bu, gerçek bir URL ile değiştirilmelidir (örneğin, 'https://api.example.com').
-# $headers: İsteğin başlıklarıdır. Bu örnekte, içerik türü application/json ve kullanıcı ajanı Sms-Api olarak ayarlanmıştır.
+* **Türkçe Karakter Desteği**: Mesajlarınız Türkçe karakter içeriyorsa, Unicode desteğini aktif hale getirebilirsiniz.
 
-# Adımlar:
-# Bağlantı Testi: send_request fonksiyonu çağrılır ve API'ye bağlantı testi yapılır. Eğer başarılıysa (error == "false" ve info == "CONNECTED_API"), toplu SMS gönderme işlemi başlatılır.
+## Başlarken
 
-# Toplu SMS Gönderme: API bağlantısı başarılı olduğunda, bulk_data dizisi hazırlanır ve bir sonraki istekle API'ye toplu SMS gönderilir. Bu dizide şunlar yer alır:
-# to: SMS gönderilecek numaralar (virgülle ayrılmış).
-# sender_id: SMS başlığı.
-# message_content: Gönderilecek mesajın içeriği.
-# unicode: Mesajın Türkçe karakter içerip içermediği (doğruysa true, değilse false).
+### Gereksinimler
 
-# Sonuçların Yazdırılması: send_request fonksiyonu tekrar çağrılır ve sonucu yazdırılır.
+Bu betiği çalıştırabilmek için aşağıdaki gereksinimlere ihtiyacınız vardır:
 
-# Kullanımı
-# Bu kodu PHP dosyası olarak kaydedin (örneğin, sms_api.php).
-# Dosya içerisinde, $token_value, $url, ve diğer parametreleri kendi API'nize göre güncelleyin.
-# Ardından, terminalden veya tarayıcıdan bu dosyayı çalıştırarak toplu SMS gönderimini test edin.
+- PHP 7.0 veya daha üstü
+- cURL uzantısı yüklü olmalıdır
+
+## Kullanım
+
+Bu PHP betiği, API ile bağlantı kurup toplu SMS göndermek için aşağıdaki adımları izler:
+
+1. API'ye bağlantı testi yapılır.
+2. Bağlantı başarılı ise, belirlediğiniz numaralara toplu SMS gönderilir.
+3. İşlemin sonucu ekrana yazdırılır.
+
+### Örnek Kod
+
+Aşağıda, betiğin temel çalışma mantığını gösteren bir kod örneği verilmiştir:
+
+```php
+$token_value = "YOURTOKENHERE"; // Sağlayıcıdan aldığınız token anahtarı
+$url = 'https://api.example.com';
+
+$data = [
+    "token" => $token_value,
+    "status" => "account",
+];
+
+$headers = [
+    "User-Agent: Sms-Api",
+    "Content-Type: application/json"
+];
+
+// API bağlantı testi
+$response = send_request($url, $data, $headers);
+
+if ($response && $response["error"] == "false" && $response["info"] == "CONNECTED_API") {
+    $bulk_data = [
+        "token" => $token_value,
+        "send" => "bulk",
+        "to" => "905329991199",  // Örnek numaralar
+        "sender_id" => "SMS",  // Mesaj başlığı
+        "message_content" => "Mesaj içeriği", 
+        "unicode" => false // Türkçe karakter içeriyorsa true yapın
+    ];
+
+    $response = send_request($url, $bulk_data, $headers);
+    print_r($response);
+} else {
+    echo "API Bağlantı Hatası";
+}
+
+
